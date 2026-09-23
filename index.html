@@ -291,10 +291,10 @@ const ARENAS={
 /* ================= characters ================= */
 const KID={leg:30,torso:31,tw:30,head:25,arm:24};
 const STARTERS=['hank','gage'];
-const STORY_IDS=['rip','amias','myles','charlie','tutu','pops','clasen','mom','dad','addie','beckett','paolo','doug','hoisington','nana'];
+const STORY_IDS=['rip','amias','myles','charlie','tutu','pops','clasen','mom','dad','addie','beckett','paolo','doug','greg','hoisington','nana'];
 const ROSTER=STARTERS.concat(STORY_IDS);
-const STORY_LEVEL={rip:.12,amias:.18,myles:.24,charlie:.3,tutu:.35,pops:.4,clasen:.43,mom:.47,dad:.5,addie:.53,beckett:.56,paolo:.6,doug:.63,hoisington:.66,nana:.7};
-const STORY_ARENA={rip:'backyard',amias:'backyard',myles:'desert',charlie:'woods',tutu:'backyard',pops:'woods',clasen:'desert',mom:'desert',dad:'woods',addie:'backyard',beckett:'desert',paolo:'woods',doug:'backyard',hoisington:'desert',nana:'woods'};
+const STORY_LEVEL={rip:.12,amias:.18,myles:.24,charlie:.3,tutu:.35,pops:.4,clasen:.43,mom:.47,dad:.5,addie:.53,beckett:.56,paolo:.6,doug:.63,greg:.65,hoisington:.67,nana:.7};
+const STORY_ARENA={rip:'backyard',amias:'backyard',myles:'desert',charlie:'woods',tutu:'backyard',pops:'woods',clasen:'desert',mom:'desert',dad:'woods',addie:'backyard',beckett:'desert',paolo:'woods',doug:'backyard',greg:'desert',hoisington:'desert',nana:'woods'};
 const SNEAKER_W={type:'sneaker',color:'#ffffff',colorS:'#dfe3ea',acc:'#d9dde6'};
 const SNEAKER_B={type:'sneaker',color:'#2a2833',colorS:'#1d1b25',acc:'#ffffff'};
 const JEANS={type:'pants',color:'#3d5f9a',colorS:'#2d4876'};
@@ -355,6 +355,10 @@ const CHARS={
   doug:{id:'doug',name:'Uncle Doug',short:'Doug',kind:'human',speed:250,special:'brick',cool:5,dims:{leg:56,torso:50,tw:34,head:23,arm:38},
     skin:'#ffd9bf',skinS:'#eeb895',eye:'#4a6a8a',hair:{style:'short',color:'#6e4323'},
     top:{type:'tee',color:'#3f7fd6',colorS:'#2f63ad',art:null},bottom:JEANS,shoe:SNEAKER_W,taunt:'Brick by brick!'},
+  greg:{id:'greg',name:'Uncle Greg',short:'Greg',kind:'human',speed:265,special:'golf',cool:8,dims:{leg:46,torso:44,tw:33,head:23,arm:33},
+    skin:'#ffd9bf',skinS:'#eeb895',eye:'#5a3a1a',hair:{style:'short',color:'#3a2418'},hat:{color:'#23702e'},
+    top:{type:'polo',color:'#2e8b3a',colorS:'#23702e'},bottom:{type:'shorts',color:'#d2bf93',colorS:'#b6a478'},
+    shoe:{type:'golf',color:'#ffffff',colorS:'#dfe3ea',acc:'#8a5a2b'},held:'club',taunt:'Watch this swing!'},
   hoisington:{id:'hoisington',name:'Grandpa H',short:'Grandpa H',kind:'human',speed:240,special:'boulder',cool:7,dims:{leg:58,torso:54,tw:36,head:23,arm:40},
     skin:'#f5d0bb',skinS:'#e2b59c',eye:'#4a6a8a',hair:{style:'short',color:'#bdbdbd'},
     top:{type:'labcoat',color:'#ffffff',colorS:'#e3e6ee',scrub:'#4a86d6'},bottom:{type:'pants',color:'#4a86d6',colorS:'#3a6bb0'},
@@ -831,6 +835,11 @@ function humanPose(f,t){
       case 'boomerang': if(sp.phase==='wind'){ p.armF=2.7; p.lean=-.1; } else { p.armF=1.4; p.armFk=1.15; p.lean=.15; } p.legB=-.3; p.legF=.3; break;
       case 'brick': if(sp.phase==='lift'){ p.armF=2.8; p.lean=-.12; } else { p.armF=1.25; p.armFk=1.15; p.lean=.18; } p.legB=-.3; p.legF=.3; break;
       case 'boulder': if(sp.phase==='lift'){ p.armB=2.95; p.armF=3.05; p.lean=-.05; } else { p.armB=1.3; p.armF=1.4; p.armFk=1.1; p.lean=.2; } p.legB=-.35; p.legF=.35; break;
+      case 'golf':
+        if(sp.phase==='wind'){ const k=Math.min(1,sp.t/.45); p.armF=-.6-1.9*k; p.armB=-.7-1.8*k; p.lean=-.12*k; p.legB=-.35; p.legF=.35; }
+        else if(sp.phase==='swing'){ const k=Math.min(1,sp.t/.14); p.armF=-2.5+3.9*k; p.armB=-2.5+3.9*k; p.lean=.1; p.legB=-.4; p.legF=.35; }
+        else { p.armF=2.5; p.armB=2.4; p.lean=.15; p.legB=-.45; p.legF=.3; p.face='happy'; }
+        break;
       case 'spike':
         if(sp.phase==='spike'){ p.armF=1.1; p.armFk=1.2; p.lean=.2; p.armB=.6; }
         else { p.armF=2.85; p.armB=2.6; }
@@ -1134,6 +1143,14 @@ function drawCane(c,x,y,gy){
   }
   c.fillStyle='#d9dde6'; c.beginPath(); c.arc(x+1,y+6,2.4,0,Math.PI*2); c.fill();
 }
+function drawClub(c,x,y,a,L,glow){
+  const sa=Math.sin(a), ca=Math.cos(a), ex=x+sa*L, ey=y+ca*L;
+  if(glow){ const g=c.createRadialGradient(ex,ey,0,ex,ey,26); g.addColorStop(0,'rgba(255,240,150,.95)'); g.addColorStop(1,'rgba(255,140,40,0)'); c.fillStyle=g; c.beginPath(); c.arc(ex,ey,26,0,Math.PI*2); c.fill(); }
+  c.lineCap='round'; c.strokeStyle=OUT; c.lineWidth=5.5; c.beginPath(); c.moveTo(x-sa*4,y-ca*4); c.lineTo(ex,ey); c.stroke();
+  c.strokeStyle='#c9ced8'; c.lineWidth=2.8; c.beginPath(); c.moveTo(x,y); c.lineTo(ex,ey); c.stroke();
+  c.strokeStyle='#1d1b25'; c.lineWidth=4; c.beginPath(); c.moveTo(x-sa*4,y-ca*4); c.lineTo(x+sa*9,y+ca*9); c.stroke();
+  c.save(); c.translate(ex,ey); c.rotate(-a); rr(c,-4,-4,17,9,3.5); fs(c,'#6d707a',2.2); c.fillStyle='rgba(255,255,255,.5)'; c.fillRect(0,-2,9,2); c.restore();
+}
 function drawVolley(c,x,y,fire,t){
   c.save(); c.translate(x,y);
   if(fire){ for(let i=0;i<6;i++){ const a=i/6*Math.PI*2+t*9; c.beginPath(); c.arc(Math.cos(a)*9,Math.sin(a)*9-4,8,0,Math.PI*2); c.fillStyle=i%2?'#ff8a3d':'#ffd84d'; c.fill(); } }
@@ -1191,6 +1208,7 @@ function drawHuman(c,f,t,p,look){
   if(held==='cone') drawCone(c,hand.x,hand.y,clamp(f.meter,0,1));
   else if(held==='ball') drawBall(c,hand.x,hand.y+3,f.def.cool<2?clamp(f.meter,0,1):1);
   else if(held==='cane'&&!f.caneOut) drawCane(c,hand.x,hand.y,-hipY);
+  else if(held==='club') drawClub(c,hand.x,hand.y,p.armF,D.arm*1.35,!!(f.sp&&f.state==='special'&&f.sp.type==='golf'&&f.sp.phase!=='follow'));
   const sp=f.sp;
   if(sp&&f.state==='special'){
     if(sp.type==='boulder'&&sp.phase==='lift') drawBoulder(c,3,-(D.torso+D.head*2+26),26*Math.min(1,sp.t/.2));
@@ -1703,6 +1721,7 @@ class Fighter{
       case 'brick': this.sp.phase='lift'; this.sp.color=pick(['#e53935','#ffc629','#2f7bff','#2fbf5f']); break;
       case 'boulder': this.sp.phase='lift'; sfx('windup'); break;
       case 'spike': this.sp.phase='toss'; sfx('toss'); break;
+      case 'golf': this.sp.phase='wind'; sfx('windup'); pop('TURBO!',this.x,this.y-this.H-24,'#ffb14a',30); break;
       case 'buck': if(foe) this.facing=foe.x>=this.x?-1:1; this.sp.phase='wind'; sfx('neigh'); pop('!',this.x-this.facing*70,this.y-this.H*.55,'#ffb14a',46); break;
     }
   }
@@ -1733,6 +1752,11 @@ class Fighter{
       case 'brick': return this.spTimed('lift',.25,()=>{ spawnBrick(this); sfx('whoosh'); },.2);
       case 'boulder': return this.spTimed('lift',.45,()=>{ spawnBoulder(this); sfx('whoosh'); G.shake=Math.max(G.shake,3); },.25);
       case 'spike': return this.spSpike(dt,foe);
+      case 'golf':
+        if(sp.phase==='wind'){ if(this.onGround) this.vx=approach(this.vx,0,3000*dt); if(Math.random()<.6) spawn({x:this.x-this.facing*rnd(10,40),y:this.y-this.H*rnd(.8,1.1),vx:rnd(-40,40),vy:rnd(-90,-20),life:.4,size:rnd(3,6),type:'star',color:pick(['#ffd84d','#ffb14a','#ffffff'])}); if(sp.t>=.45){ sp.phase='swing'; sp.t=0; sfx('whoosh'); } }
+        else if(sp.phase==='swing'){ if(sp.t>=.14){ sp.phase='follow'; sp.t=0; } }
+        else if(sp.t>=.35) this.endSpecial();
+        return false;
       case 'buck':
         if(sp.phase==='wind'){ if(this.onGround) this.vx=approach(this.vx,0,3000*dt); if(Math.random()<.25) dust(this.x-this.facing*40,this.y,1); if(sp.t>=.5){ sp.phase='kick'; sp.t=0; sfx('kick'); G.shake=Math.max(G.shake,4); dust(this.x-this.facing*60,this.y,8); } }
         else if(sp.phase==='kick'){ if(sp.t>=.18){ sp.phase='recover'; sp.t=0; } }
@@ -1968,6 +1992,8 @@ class Fighter{
         const o=laserOrigin(this), x0=o.x-this.facing*12, x1=this.facing>0?2200:-1200;
         return {x1:Math.min(x0,x1),x2:Math.max(x0,x1),y1:o.y-22,y2:o.y+22,dmg:sp.type==='laser'?15:14,kb:[560,-320],kind:'hit',snd:'thud',words:['ZAP!','ZZZAP!'],shake:10,col:sp.type==='laser'?'#8ff7ff':'#ffe98a',big:true,hits:sp.hits};
       }
+      if(sp.type==='golf'&&sp.phase==='swing')
+        return Object.assign(this.boxWorld([0,100*k,-100*k,12]),{dmg:12,kb:[900,-560],kind:'hit',snd:'smash',words:['FORE!','TURBO!'],shake:12,col:'#ffb14a',big:true,hits:sp.hits});
       if(sp.type==='buck'&&sp.phase==='kick')
         return Object.assign(this.boxWorld([-160,-40,-112,-28]),{dmg:17,kb:[640,-400],kind:'hit',snd:'smash',words:['BUCK!','KA-BLAM!'],shake:12,col:'#ffb14a',big:true,hits:sp.hits});
       if(sp.type==='fart'&&sp.phase==='fire'){
@@ -2012,6 +2038,7 @@ function aiWantsSpecial(me,foe,adx,dy){
     case 'brick': return adx>110&&adx<500;
     case 'boulder': return adx>110&&adx<460;
     case 'buck': return adx<150&&Math.abs(dy)<60;
+    case 'golf': return adx<120*me.k&&Math.abs(dy)<50;
   }
   return false;
 }
@@ -2379,7 +2406,7 @@ function startParty(){
   G.fighters=ids.map((id,i)=>new Fighter(CHARS[id],{team:0,ctrl:'demo',x:500,facing:i%2?-1:1}));
   const onMain=G.fighters.slice(0,Math.min(11,G.fighters.length)), rest=G.fighters.slice(onMain.length);
   onMain.forEach((f,i)=>{ f.x=190+620*(i+.5)/onMain.length; f.facing=f.x<500?1:-1; f.side=i; });
-  const spots=[[PLATS[1],285],[PLATS[1],360],[PLATS[2],640],[PLATS[2],715],[PLATS[3],470],[PLATS[3],535]];
+  const spots=[[PLATS[1],270],[PLATS[1],330],[PLATS[1],385],[PLATS[2],615],[PLATS[2],670],[PLATS[2],725],[PLATS[3],465],[PLATS[3],535]];
   rest.forEach((f,i)=>{ const s=spots[i%spots.length]; f.x=s[1]; f.y=s[0].y; f.platform=s[0]; f.facing=f.x<500?1:-1; f.side=i+3; });
   for(const f of G.fighters) f.setState('win');
   G.state='party'; G.stateT=0; G.paused=false; G.particles=[]; G.texts=[]; G.proj=[]; G.winShown=true;
@@ -2565,6 +2592,14 @@ function drawMindFx(c,f,t){
   c.strokeStyle='rgba(220,255,230,.9)'; c.lineWidth=3; c.setLineDash([6,8]); c.lineDashOffset=-t*60; c.beginPath(); c.moveTo(hx,hy); c.lineTo(vx,vy); c.stroke();
   c.restore();
 }
+function drawGolfFx(c,f){
+  const sp=f.sp; if(!sp||!(sp.phase==='swing'||(sp.phase==='follow'&&sp.t<.15))) return;
+  const D=f.def.dims, cx=f.x+f.facing*D.tw*.2, cy=f.y-D.leg-(D.torso-5), R=D.arm*2.3;
+  c.save(); c.lineCap='round'; c.translate(cx,cy); c.scale(f.facing,1);
+  c.strokeStyle='rgba(255,210,80,.55)'; c.lineWidth=16; c.beginPath(); c.arc(0,0,R,-Math.PI*.95,Math.PI*.3); c.stroke();
+  c.strokeStyle='rgba(255,255,255,.85)'; c.lineWidth=6; c.beginPath(); c.arc(0,0,R,-Math.PI*.9,Math.PI*.28); c.stroke();
+  c.restore();
+}
 function drawAura(c,f){
   if(f.state!=='lifted') return;
   const cy=f.y-f.H*.5, r=f.H*.75;
@@ -2686,6 +2721,7 @@ function render(){
       else if(st==='spin'||st==='dunk') drawLeapFx(ctx,f);
       else if(st==='stretch'&&f.sp.phase==='squeeze') drawWrap(ctx,f);
       else if(st==='mind') drawMindFx(ctx,f,t);
+      else if(st==='golf') drawGolfFx(ctx,f);
     }
     if(f.state==='dead'||(f.state==='freeing'&&f.stateT<1.3)){ const h=headPoint(f); drawStars(ctx,h.x,h.y,t); }
     if(f.state==='flattened') drawStars(ctx,f.x,f.y-42,t);
